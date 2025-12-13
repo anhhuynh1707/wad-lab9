@@ -49,4 +49,56 @@ public class AuthController {
         response.put("message", "Logged out successfully. Please remove token from client.");
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(
+            @Valid @RequestBody ChangePasswordDTO dto) {
+
+        // 1. Get current user from SecurityContext
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        // 2. Verify current password
+        // 3. Check new password matches confirm
+        // 4. Hash and update password
+        // (Delegated to service layer)
+        userService.changePassword(username, dto);
+
+        // 5. Return success message
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Password changed successfully");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(
+            @Valid @RequestBody ForgotPasswordDTO dto) {
+
+        userService.forgotPassword(dto);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Password reset token generated (check email)"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @Valid @RequestBody ResetPasswordDTO dto) {
+
+        userService.resetPassword(dto);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Password reset successfully"));
+    }
+    
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDTO> refreshToken(
+            @Valid @RequestBody RefreshTokenDTO dto) {
+
+        LoginResponseDTO response =
+                userService.refreshAccessToken(dto.getRefreshToken());
+
+        return ResponseEntity.ok(response);
+    }
 }
